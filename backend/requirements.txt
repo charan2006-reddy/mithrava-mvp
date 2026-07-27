@@ -1,0 +1,65 @@
+# Mithrava Agriculture Platform - Backend Dependencies
+# ================================================
+
+# Core Framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9
+
+# Database
+sqlalchemy[asyncio]==2.0.35
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+alembic==1.13.0
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+
+# HTTP Client
+httpx==0.27.0
+
+# AI / LLM
+openai==1.50.0
+
+# Push Notifications (FCM)
+firebase-admin>=6.0.0
+
+# Image Processing
+Pillow==10.4.0
+
+# Rate Limiting
+slowapi==0.1.9
+
+# Redis (for rate limiting + caching in production)
+redis>=5.0.0
+
+# S3 Storage (optional)
+aioboto3==13.1.0
+
+# Validation & Settings
+pydantic==2.9.0
+pydantic-settings==2.5.0
+python-dotenv==1.0.1
+
+# Utilities
+python-dateutil==2.9.0
+
+# ML / Disease Detection (MobileNetV2)
+torch>=2.0.0
+torchvision>=0.15.0
+huggingface-hub>=0.20.0
+
+# Async server performance (used by Docker CMD)
+uvloop>=0.19.0
+httptools>=0.6.0
+
+# PostgreSQL vector embeddings (pgvector)
+pgvector>=0.3.0
+
+# SQLite fallback (dev/testing only — not installed in prod Docker)
+aiosqlite>=0.20.0
+
+# OpenAI embeddings
+tiktoken>=0.7.0

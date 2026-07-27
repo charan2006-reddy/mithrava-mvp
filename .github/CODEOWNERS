@@ -1,0 +1,12 @@
+# Default: require review from team
+* @mithrava-team
+
+# Backend changes need backend review
+/backend/ @mithrava-team
+
+# Frontend changes need frontend review
+/frontend/ @mithrava-team
+
+# DevOps changes need review
+/docker/ @mithrava-team
+/.github/ @mithrava-team

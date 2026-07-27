@@ -1,0 +1,97 @@
+# =============================================================================
+# Mithrava Frontend — Multi-stage Dockerfile
+# Stage 1: deps       — Install dependencies
+# Stage 2: builder    — Build the application
+# Stage 3: runner     — Production-ready standalone image
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Stage 1: Dependencies
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+# Copy dependency manifests
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
+
+# Install dependencies based on the lock file present
+RUN \
+    if [ -f pnpm-lock.yaml ]; then \
+        corepack enable && pnpm install --frozen-lockfile; \
+    elif [ -f yarn.lock ]; then \
+        yarn install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then \
+        npm ci; \
+    else \
+        npm install; \
+    fi
+
+# ---------------------------------------------------------------------------
+# Stage 2: Builder
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy application source
+COPY . .
+
+# Set Next.js to output standalone mode
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the application
+RUN npm run build
+
+# ---------------------------------------------------------------------------
+# Stage 3: Runner (Production)
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS runner
+
+# Metadata
+LABEL maintainer="Mithrava Team <team@mithrava.com>" \
+      description="Mithrava AI-powered agricultural assistant frontend" \
+      version="1.0.0"
+
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy the standalone output from builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+# Copy static assets
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy public assets
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Switch to non-root user
+USER nextjs
+
+# Expose the application port
+EXPOSE 3000
+
+# Set the hostname (needed for standalone mode)
+ENV HOSTNAME="0.0.0.0"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+
+# Use dumb-init as PID 1 for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the Next.js server
+CMD ["node", "server.js"]

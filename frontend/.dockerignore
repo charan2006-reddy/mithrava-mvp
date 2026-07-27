@@ -1,0 +1,37 @@
+# ─── Frontend .dockerignore ────────────────────────────────────────────────
+# Exclude dev artifacts and build caches from Docker context.
+
+node_modules/
+.next/
+out/
+.turbo/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+coverage/
+jest-cache/
+
+# Misc
+*.tsbuildinfo
+.eslintcache

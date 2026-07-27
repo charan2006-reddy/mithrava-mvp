@@ -1,0 +1,11 @@
+# Development & CI dependencies
+-r requirements.txt
+
+# Linting
+ruff>=0.4.0
+
+# Type checking
+mypy>=1.8.0
+
+# Testing extras
+pytest-cov>=4.1.0

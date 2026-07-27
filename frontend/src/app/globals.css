@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --mithrava-primary: #1a4d2c;
+  --mithrava-primary-light: #2e7d48;
+  --mithrava-primary-lighter: #4daa64;
+  --mithrava-accent: #e8a820;
+  --mithrava-background: #f8f9f6;
+  --mithrava-foreground: #1a1a1a;
+  --mithrava-muted: #f1f3ee;
+  --mithrava-border: #e2e5de;
+  --mithrava-card: #ffffff;
+  --mithrava-destructive: #dc2626;
+  --mithrava-success: #16a34a;
+  --mithrava-warning: #f59e0b;
+}
+
+.dark {
+  --mithrava-primary: #4daa64;
+  --mithrava-primary-light: #6fc388;
+  --mithrava-primary-lighter: #9dd5ad;
+  --mithrava-accent: #ffca28;
+  --mithrava-background: #0a0f0c;
+  --mithrava-foreground: #f0f0f0;
+  --mithrava-muted: #1a2418;
+  --mithrava-border: #2a3828;
+  --mithrava-card: #121a14;
+  --mithrava-destructive: #ef4444;
+  --mithrava-success: #22c55e;
+  --mithrava-warning: #fbbf24;
+}
+
+@layer base {
+  * {
+    @apply border-[var(--mithrava-border)];
+  }
+
+  body {
+    @apply bg-[var(--mithrava-background)] text-[var(--mithrava-foreground)] antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-mithrava-500 text-white hover:bg-mithrava-600 active:bg-mithrava-700
+           rounded-md px-6 py-3 font-semibold transition-all duration-200
+           min-h-[48px] min-w-[48px] flex items-center justify-center gap-2
+           shadow-sm hover:shadow-md;
+  }
+
+  .btn-accent {
+    @apply bg-amber-500 text-mithrava-600 hover:bg-amber-400 active:bg-amber-300
+           rounded-md px-6 py-3 font-semibold transition-all duration-200
+           min-h-[48px] min-w-[48px] flex items-center justify-center gap-2
+           shadow-sm hover:shadow-md;
+  }
+
+  .card {
+    @apply bg-[var(--mithrava-card)] rounded-lg border border-[var(--mithrava-border)]
+           p-4 shadow-sm;
+  }
+
+  .card-elevated {
+    @apply bg-[var(--mithrava-card)] rounded-lg border border-[var(--mithrava-border)]
+           p-4 shadow-md hover:shadow-lg transition-shadow duration-200;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

@@ -1,0 +1,94 @@
+version: "3.9"
+
+# Development overrides — use with:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mithrava
+      POSTGRES_USER: mithrava
+      POSTGRES_PASSWORD: mithrava
+    # Expose postgres to host tools (pgAdmin, DBeaver, etc.)
+
+  redis:
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --loglevel verbose
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+      target: builder
+    container_name: mithrava-backend-dev
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --reload-dir /app
+      --log-level debug
+      --access-log
+    ports:
+      - "8000:8000"
+      - "5678:5678"   # debugpy remote debugging
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mithrava:mithrava@postgres:5432/mithrava
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: debug
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:3001","http://127.0.0.1:3000"]'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      # Bind-mount source for hot-reload (overrides the production volume)
+      - ./backend:/app
+      - upload_data:/app/uploads
+      # Exclude venv and __pycache__ from bind mount
+    networks:
+      - mithrava-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+      target: deps
+    container_name: mithrava-frontend-dev
+    command: npm run dev
+    ports:
+      - "3000:3000"
+      - "3001:3001"   # HMR websocket alternate port
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      NODE_ENV: development
+    depends_on:
+      - backend
+    volumes:
+      # Bind-mount source for hot-reload
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    networks:
+      - mithrava-network
+
+  nginx:
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  redis_data:
+  upload_data:
+  frontend_node_modules:
+
+networks:
+  mithrava-network:
+    driver: bridge

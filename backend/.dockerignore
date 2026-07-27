@@ -1,0 +1,51 @@
+# ─── Backend .dockerignore ─────────────────────────────────────────────────
+# Exclude dev/test artifacts, secrets, and build caches from Docker context.
+
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# SQLite dev database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Uploads and logs (volumes mount these)
+uploads/
+logs/
+
+# Tests
+tests/
+*_test.py
+conftest.py
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Docker (avoid recursive builds)
+docker/
+docker-compose*.yml
+
+# OS artifacts
+.DS_Store
+Thumbs.db
