@@ -114,6 +114,8 @@ $RECYCLE.BIN/
 # Project-specific
 # ---------------------------------------------------------------------------
 hello-fly/
+*.db
+backend/mithrava.db
 backend/app/uploads/*
 !backend/app/uploads/.gitkeep
 backend/logs/*
