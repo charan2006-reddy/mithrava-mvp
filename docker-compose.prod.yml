@@ -66,8 +66,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: ../docker/Dockerfile.backend
+      context: .
+      dockerfile: ./docker/Dockerfile.backend
     container_name: mithrava-backend
     restart: always
     # NO ports exposed — nginx handles external traffic
