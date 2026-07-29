@@ -24,7 +24,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only dependency manifests first (leverage Docker layer caching)
-COPY requirements.txt .
+COPY backend/requirements.txt .
 
 # Install Python dependencies into a virtual environment
 RUN python -m venv /opt/venv
