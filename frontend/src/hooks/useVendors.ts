@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { vendorService } from "@/services/vendorService";
-import type { VendorFilter } from "@/types/vendor";
+import type { Vendor, VendorFilter } from "@/types/vendor";
 
 /**
  * Fetch vendors from the API, with optional type/city filters.
@@ -13,7 +13,7 @@ export function useVendors(filter?: VendorFilter) {
     queryKey: ["vendors", filter],
     queryFn: async () => {
       const res = await vendorService.list(filter);
-      return res.data?.vendors ?? [];
+      return (res.data as { vendors: Vendor[] })?.vendors ?? [];
     },
   });
 }
