@@ -13,7 +13,7 @@ export function useVendors(filter?: VendorFilter) {
     queryKey: ["vendors", filter],
     queryFn: async () => {
       const res = await vendorService.list(filter);
-      return (res.data as { vendors: Vendor[] })?.vendors ?? [];
+      return ((res.data as unknown) as { vendors: Vendor[] })?.vendors ?? [];
     },
   });
 }
