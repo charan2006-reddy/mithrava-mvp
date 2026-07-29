@@ -59,7 +59,7 @@ if not exist "backend\.env" (
             echo REDIS_URL=redis://localhost:6379/0
             echo SECRET_KEY=dev-secret-key-change-in-production
             echo ENVIRONMENT=development
-            echo OPENAI_API_KEY=sk-your-key-here
+            echo GEMINI_API_KEY=your-gemini-api-key-here
         ) > "backend\.env"
         echo        Created backend\.env with defaults
     )

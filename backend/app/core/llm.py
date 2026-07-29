@@ -1,10 +1,10 @@
 """LLM integration services for Mitra AI, disease detection, and RAG.
 
-Supports Ollama (local), Gemini (free), OpenAI (cloud), and provides Vision analysis
-for crop disease detection, embedding generation for RAG, and context-aware
-answer generation.
+Supports Gemini (free), Ollama (local) for chat, vision, and embeddings.
+Provides Vision analysis for crop disease detection, embedding generation
+for RAG, and context-aware answer generation.
 
-Priority: Gemini (free) → OpenAI (paid) → Ollama (local)
+Priority: Gemini (free) → Ollama (local)
 """
 
 import base64
@@ -23,13 +23,10 @@ logger = logging.getLogger("mithrava.llm")
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
-OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4o")
-OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 GEMINI_VISION_MODEL = os.getenv("GEMINI_VISION_MODEL", "gemini-2.0-flash")
+GEMINI_EMBEDDING_MODEL = os.getenv("GEMINI_EMBEDDING_MODEL", "text-embedding-004")
 
 
 # ---------------------------------------------------------------------------
@@ -121,52 +118,7 @@ async def ask_ollama(prompt: str, context: Optional[str] = None) -> str:
         return data.get("response", "")
 
 
-# ---------------------------------------------------------------------------
-# OpenAI LLM (cloud) — requires OPENAI_API_KEY
-# ---------------------------------------------------------------------------
 
-
-async def ask_openai(
-    prompt: str,
-    context: Optional[str] = None,
-    system_prompt: Optional[str] = None,
-) -> str:
-    """Send a prompt to OpenAI and return the response.
-
-    Args:
-        prompt: The user prompt/query.
-        context: Optional context string to inject into the conversation.
-        system_prompt: Optional system prompt to set the assistant's behavior.
-
-    Returns:
-        The model's response text.
-
-    Raises:
-        RuntimeError: If OPENAI_API_KEY is not set or API call fails.
-    """
-    if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY not configured")
-
-    from openai import AsyncOpenAI
-
-    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
-    messages: list[dict[str, str]] = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
-
-    if context:
-        messages.append({"role": "system", "content": f"Relevant context:\n{context}"})
-
-    messages.append({"role": "user", "content": prompt})
-
-    response = await client.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=messages,
-        temperature=0.7,
-        max_tokens=2048,
-    )
-    return response.choices[0].message.content or ""
 
 
 # ---------------------------------------------------------------------------
@@ -240,7 +192,7 @@ async def ask_llm(
     context: Optional[str] = None,
     system_prompt: Optional[str] = None,
 ) -> str:
-    """Ask the best available LLM. Tries Gemini (free) → OpenAI (paid) → Ollama (local).
+    """Ask the best available LLM. Tries Gemini (free) → Ollama (local).
 
     This is the main entry point for all chat completions.
 
@@ -265,15 +217,7 @@ async def ask_llm(
             errors.append(f"Gemini: {exc}")
             logger.warning("LLM: Gemini failed — %s", exc)
 
-    # Provider 2: OpenAI (paid)
-    if OPENAI_API_KEY:
-        try:
-            return await ask_openai(prompt, context, system_prompt)
-        except Exception as exc:
-            errors.append(f"OpenAI: {exc}")
-            logger.warning("LLM: OpenAI failed — %s", exc)
-
-    # Provider 3: Ollama (local)
+    # Provider 2: Ollama (local)
     try:
         return await ask_ollama(prompt)
     except Exception as exc:
@@ -318,9 +262,7 @@ Format your response as JSON:
 
 
 async def analyze_image_with_vision(image_base64: str, prompt: str) -> dict:
-    """Analyze an image using the best available Vision API.
-
-    Tries Gemini (free) → OpenAI (paid).
+    """Analyze an image using Gemini Vision API.
 
     Args:
         image_base64: Base64-encoded image data.
@@ -329,25 +271,13 @@ async def analyze_image_with_vision(image_base64: str, prompt: str) -> dict:
     Returns:
         Parsed JSON dict from the model's response.
     """
-    errors = []
-
-    # Provider 1: Gemini (free)
     if GEMINI_API_KEY:
         try:
             return await _analyze_image_gemini(image_base64, prompt)
         except Exception as exc:
-            errors.append(f"Gemini: {exc}")
             logger.warning("Vision: Gemini failed — %s", exc)
 
-    # Provider 2: OpenAI (paid)
-    if OPENAI_API_KEY:
-        try:
-            return await _analyze_image_openai(image_base64, prompt)
-        except Exception as exc:
-            errors.append(f"OpenAI: {exc}")
-            logger.warning("Vision: OpenAI failed — %s", exc)
-
-    logger.error("All vision providers failed: %s", errors)
+    logger.error("No vision provider available (Gemini key not configured or failed)")
     return _default_disease_response()
 
 
@@ -394,41 +324,6 @@ async def _analyze_image_gemini(image_base64: str, prompt: str) -> dict:
     return _default_disease_response()
 
 
-async def _analyze_image_openai(image_base64: str, prompt: str) -> dict:
-    """Analyze image using OpenAI Vision (paid)."""
-    from openai import AsyncOpenAI
-
-    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
-    response = await client.chat.completions.create(
-        model=OPENAI_VISION_MODEL,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}",
-                            "detail": "high",
-                        },
-                    },
-                ],
-            },
-        ],
-        max_tokens=1500,
-        response_format={"type": "json_object"},
-        temperature=0.3,
-    )
-
-    content = response.choices[0].message.content or "{}"
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError:
-        return _default_disease_response()
-
-
 def _default_disease_response() -> dict:
     """Return a safe default response when analysis fails."""
     return {
@@ -446,9 +341,7 @@ def _default_disease_response() -> dict:
 
 
 async def analyze_disease_image(image_base64: str) -> dict:
-    """Analyze a crop image for disease detection.
-
-    Tries Gemini (free) → OpenAI (paid).
+    """Analyze a crop image for disease detection using Gemini Vision.
 
     Args:
         image_base64: Base64-encoded image data.
@@ -468,27 +361,14 @@ async def analyze_disease_image(image_base64: str) -> dict:
     )
 
     prompt = "Please analyze this crop image for any diseases or health issues."
-    errors = []
 
-    # Provider 1: Gemini (free)
     if GEMINI_API_KEY:
         try:
             result = await _analyze_disease_gemini(image_base64, system_msg, prompt)
             return _ensure_disease_keys(result)
         except Exception as exc:
-            errors.append(f"Gemini: {exc}")
             logger.warning("Disease analysis: Gemini failed — %s", exc)
 
-    # Provider 2: OpenAI (paid)
-    if OPENAI_API_KEY:
-        try:
-            result = await _analyze_disease_openai(image_base64, system_msg, prompt)
-            return _ensure_disease_keys(result)
-        except Exception as exc:
-            errors.append(f"OpenAI: {exc}")
-            logger.warning("Disease analysis: OpenAI failed — %s", exc)
-
-    logger.error("All disease analysis providers failed: %s", errors)
     return _ensure_disease_keys(_default_disease_response())
 
 
@@ -537,41 +417,6 @@ async def _analyze_disease_gemini(image_base64: str, system_msg: str, prompt: st
     return _default_disease_response()
 
 
-async def _analyze_disease_openai(image_base64: str, system_msg: str, prompt: str) -> dict:
-    """Disease analysis using OpenAI Vision (paid)."""
-    from openai import AsyncOpenAI
-
-    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
-    response = await client.chat.completions.create(
-        model=OPENAI_VISION_MODEL,
-        messages=[
-            {"role": "system", "content": system_msg},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}",
-                            "detail": "high",
-                        },
-                    },
-                ],
-            },
-        ],
-        max_tokens=1024,
-        response_format={"type": "json_object"},
-    )
-
-    content = response.choices[0].message.content or "{}"
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError:
-        return _default_disease_response()
-
-
 def _ensure_disease_keys(result: dict) -> dict:
     """Ensure all required keys exist in disease analysis result."""
     result.setdefault("disease_name", "Unknown")
@@ -589,14 +434,14 @@ def _ensure_disease_keys(result: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# OpenAI Embeddings for RAG
+# Embeddings for RAG — Gemini (free) → Ollama (local)
 # ---------------------------------------------------------------------------
 
 
 async def generate_embedding(text: str) -> list[float]:
     """Generate a vector embedding for the given text.
 
-    Uses OpenAI text-embedding-3-small (requires OPENAI_API_KEY).
+    Uses Gemini text-embedding-004 (free) with Ollama as fallback.
 
     Args:
         text: The text to embed.
@@ -605,22 +450,58 @@ async def generate_embedding(text: str) -> list[float]:
         List of floats representing the embedding vector.
 
     Raises:
-        RuntimeError: If OPENAI_API_KEY is not set or API call fails.
+        RuntimeError: If all embedding providers fail.
     """
-    if not OPENAI_API_KEY:
-        raise RuntimeError(
-            "Embeddings require OPENAI_API_KEY. "
-            "Set OPENAI_API_KEY or disable RAG features."
-        )
+    errors = []
 
-    from openai import AsyncOpenAI
+    # Provider 1: Gemini (free)
+    if GEMINI_API_KEY:
+        try:
+            return await _generate_embedding_gemini(text)
+        except Exception as exc:
+            errors.append(f"Gemini: {exc}")
+            logger.warning("Embedding: Gemini failed — %s", exc)
 
-    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-    response = await client.embeddings.create(
-        model=OPENAI_EMBEDDING_MODEL,
-        input=text,
+    # Provider 2: Ollama (local)
+    try:
+        return await _generate_embedding_ollama(text)
+    except Exception as exc:
+        errors.append(f"Ollama: {exc}")
+        logger.warning("Embedding: Ollama failed — %s", exc)
+
+    raise RuntimeError(
+        f"All embedding providers failed: {'; '.join(errors)}. "
+        "Configure GEMINI_API_KEY or start Ollama."
     )
-    return response.data[0].embedding
+
+
+async def _generate_embedding_gemini(text: str) -> list[float]:
+    """Generate embedding using Gemini text-embedding-004 (free)."""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_EMBEDDING_MODEL}:embedContent?key={GEMINI_API_KEY}"
+
+    payload = {
+        "model": f"models/{GEMINI_EMBEDDING_MODEL}",
+        "content": {"parts": [{"text": text}]},
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(url, json=payload)
+        response.raise_for_status()
+        data = response.json()
+
+    return data["embedding"]["values"]
+
+
+async def _generate_embedding_ollama(text: str) -> list[float]:
+    """Generate embedding using Ollama."""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(
+            f"{OLLAMA_BASE_URL}/api/embeddings",
+            json={"model": OLLAMA_MODEL, "prompt": text},
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["embedding"]
 
 
 async def generate_embeddings(text: str) -> list[float]:

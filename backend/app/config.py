@@ -60,14 +60,19 @@ class Settings(BaseSettings):
         description='JSON-encoded list of allowed CORS origins',
     )
 
-    # ── OpenAI ─────────────────────────────────────────────────────────
-    OPENAI_API_KEY: str = Field(default="", description="OpenAI API key")
-    OPENAI_MODEL: str = Field(
-        default="gpt-4o-mini", description="OpenAI chat completion model"
+    # ── Google Gemini (primary LLM) ────────────────────────────────────
+    GEMINI_API_KEY: str = Field(
+        default="", description="Google Gemini API key (primary LLM provider)"
     )
-    OPENAI_EMBEDDING_MODEL: str = Field(
-        default="text-embedding-3-small",
-        description="OpenAI embedding model (1536 dimensions)",
+    GEMINI_MODEL: str = Field(
+        default="gemini-2.0-flash", description="Gemini chat completion model"
+    )
+    GEMINI_VISION_MODEL: str = Field(
+        default="gemini-2.0-flash", description="Gemini vision model"
+    )
+    GEMINI_EMBEDDING_MODEL: str = Field(
+        default="text-embedding-004",
+        description="Gemini embedding model",
     )
 
     # ── Ollama (local LLM) ────────────────────────────────────────────
@@ -105,9 +110,14 @@ class Settings(BaseSettings):
         default="", description="Google OAuth 2.0 client secret"
     )
 
-    # ── Google Gemini ───────────────────────────────────────────────────
-    GEMINI_API_KEY: str = Field(
-        default="", description="Google Gemini API key for voice features"
+    # ── OpenAI (fallback LLM, optional) ────────────────────────────────
+    OPENAI_API_KEY: str = Field(default="", description="OpenAI API key (optional fallback)")
+    OPENAI_MODEL: str = Field(
+        default="gpt-4o-mini", description="OpenAI chat completion model"
+    )
+    OPENAI_EMBEDDING_MODEL: str = Field(
+        default="text-embedding-3-small",
+        description="OpenAI embedding model (1536 dimensions)",
     )
 
     # ── Firebase / Push Notifications ──────────────────────────────────

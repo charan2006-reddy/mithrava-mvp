@@ -50,7 +50,7 @@
 - [ ] Fly.io account: https://fly.io (sign up with GitHub)
 - [ ] Supabase account: https://supabase.com (sign up with GitHub)
 - [ ] Vercel account: https://vercel.com (sign up with GitHub)
-- [ ] API keys: OpenAI, OpenWeather, Gemini (optional)
+- [ ] API keys: Gemini, OpenWeather
 - [ ] Fly.io CLI installed: `curl -L https://fly.io/install.sh | sh`
 
 ---
@@ -147,9 +147,8 @@ fly secrets set SECRET_KEY="$(openssl rand -hex 32)"
 fly secrets set CORS_ORIGINS="https://mithrava-mvp.vercel.app"
 
 # API Keys
-fly secrets set OPENAI_API_KEY="sk-..."
-fly secrets set OPENWEATHER_API_KEY="..."
 fly secrets set GEMINI_API_KEY="..."
+fly secrets set OPENWEATHER_API_KEY="..."
 ```
 
 > **Note**: Set `CORS_ORIGINS` after deploying the frontend (Step 4).

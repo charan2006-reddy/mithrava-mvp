@@ -74,7 +74,7 @@ DATABASE_URL=postgresql+asyncpg://mithrava:mithrava@localhost:5432/mithrava
 REDIS_URL=redis://localhost:6379/0
 SECRET_KEY=dev-secret-key-change-in-production
 ENVIRONMENT=development
-OPENAI_API_KEY=sk-your-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 ENVEOF
         success "Created backend/.env with defaults"
     fi

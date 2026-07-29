@@ -45,7 +45,7 @@ echo ""
 read -p "Supabase connection string (postgresql+asyncpg://...): " DATABASE_URL
 read -p "OpenWeather API key: " OPENWEATHER_API_KEY
 read -p "Gemini API key (FREE — from aistudio.google.com): " GEMINI_API_KEY
-read -p "OpenAI API key (optional — press Enter to skip): " OPENAI_API_KEY
+
 
 # Generate secret key automatically
 SECRET_KEY=$(openssl rand -hex 32 2>/dev/null || python3 -c "import secrets; print(secrets.token_hex(32))" 2>/dev/null || head -c 64 /dev/urandom | xxd -p | tr -d '\n' | head -c 64)
@@ -104,14 +104,7 @@ fly secrets set OPENWEATHER_API_KEY="$OPENWEATHER_API_KEY" --app mithrava-api
 
 if [ -n "$GEMINI_API_KEY" ]; then
     fly secrets set GEMINI_API_KEY="$GEMINI_API_KEY" --app mithrava-api
-    echo "  ✅ Gemini API key set (free LLM + voice)"
-fi
-
-if [ -n "$OPENAI_API_KEY" ]; then
-    fly secrets set OPENAI_API_KEY="$OPENAI_API_KEY" --app mithrava-api
-    echo "  ✅ OpenAI API key set (paid — for RAG embeddings)"
-else
-    echo "  ℹ️  No OpenAI key — RAG embeddings disabled, chat/disease use Gemini (free)"
+    echo "  ✅ Gemini API key set (primary LLM + voice + embeddings)"
 fi
 
 # Deploy

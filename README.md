@@ -200,7 +200,7 @@ mithrava/
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql+asyncpg://mithrava:mithrava@localhost:5432/mithrava` |
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379/0` |
 | `SECRET_KEY` | JWT signing key | (generate a strong random key) |
-| `OPENAI_API_KEY` | OpenAI API key for Mitra AI | (required) |
+| `GEMINI_API_KEY` | Google Gemini API key (primary LLM) | (required) |
 | `WHATSAPP_TOKEN` | WhatsApp Business API token | (optional) |
 | `ENVIRONMENT` | `development` or `production` | `development` |
 
