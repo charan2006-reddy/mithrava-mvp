@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { farmerService } from "@/services/farmerService";
 import { cropService } from "@/services/cropService";
 import { marketService } from "@/services/marketService";
+import { mapBackendCrop } from "@/hooks/useCrops";
 
 /**
  * Dashboard stats hook — fetches real data from /api/v1/farmers/me/stats.
@@ -62,7 +63,7 @@ export function useMyCrops() {
   });
 
   return {
-    crops: query.data?.crops ?? [],
+    crops: (query.data?.crops ?? []).map(mapBackendCrop),
     total: query.data?.total ?? 0,
     isLoading: query.isLoading,
     isError: query.isError,
