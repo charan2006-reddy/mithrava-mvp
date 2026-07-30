@@ -19,7 +19,7 @@ services:
       - key: LOG_FORMAT
         value: json
       - key: DATABASE_URL
-        value: postgresql+asyncpg://postgres:AScharan2513@db.ggfuvfpztxjchxrmgpyy.supabase.co:5432/postgres
+        value: postgresql+asyncpg://postgres:AScharan2513@db.ggfuvfpztxjchxrmgpyy.supabase.co:5432/postgres?ssl=require
       - key: SECRET_KEY
         generateValue: true
       - key: GEMINI_API_KEY
@@ -27,4 +27,4 @@ services:
       - key: OPENWEATHER_API_KEY
         sync: false
       - key: CORS_ORIGINS
-        value: '["https://mithrava-mvp.vercel.app"]'
+        value: '["https://frontend-theta-six-23.vercel.app", "https://mithrava-mvp.vercel.app"]'
