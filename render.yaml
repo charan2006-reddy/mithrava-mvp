@@ -19,7 +19,7 @@ services:
       - key: LOG_FORMAT
         value: json
       - key: DATABASE_URL
-        value: postgresql+asyncpg://postgres:AScharan2513@db.ggfuvfpztxjchxrmgpyy.supabase.co:5432/postgres?ssl=require
+        value: postgresql+asyncpg://postgres:AScharan2513@db.ggfuvfpztxjchxrmgpyy.supabase.co:6543/postgres?ssl=require
       - key: SECRET_KEY
         generateValue: true
       - key: GEMINI_API_KEY
