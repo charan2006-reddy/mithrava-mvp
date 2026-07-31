@@ -19,7 +19,7 @@ services:
       - key: LOG_FORMAT
         value: json
       - key: DATABASE_URL
-        value: postgresql+asyncpg://postgres:AScharan2513@db.ggfuvfpztxjchxrmgpyy.supabase.co:6543/postgres?ssl=require
+        value: postgresql+asyncpg://neondb_owner:npg_8o2rSljpwbPA@ep-flat-queen-aycctcds.c-5.us-east-2.aws.neon.tech:5432/neondb?ssl=require
       - key: SECRET_KEY
         generateValue: true
       - key: GEMINI_API_KEY
