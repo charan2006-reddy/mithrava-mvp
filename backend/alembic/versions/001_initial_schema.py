@@ -8,6 +8,7 @@ Create Date: 2026-07-18
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from pgvector.sqlalchemy import Vector
 
 # revision identifiers
 revision = "001_initial"
@@ -17,6 +18,9 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Enable pgvector extension (required for VECTOR columns)
+    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
+
     # -----------------------------------------------------------------------
     # farmers
     # -----------------------------------------------------------------------
@@ -125,7 +129,7 @@ def upgrade() -> None:
         sa.Column("category", sa.String(50), nullable=False, index=True),
         sa.Column("tags", postgresql.JSONB, nullable=True),
         sa.Column("source", sa.String(200), nullable=True),
-        sa.Column("embedding", postgresql.VECTOR(1536), nullable=True),
+        sa.Column("embedding", Vector(1536), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )

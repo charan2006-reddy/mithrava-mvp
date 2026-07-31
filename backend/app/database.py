@@ -7,6 +7,7 @@ Supports both PostgreSQL (production) and SQLite (development/demo).
 import os
 from typing import AsyncGenerator
 
+from sqlalchemy import text as sa_text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -94,6 +95,9 @@ async def init_db() -> None:
     Imports every model module so Base.metadata knows about all tables.
     """
     async with engine.begin() as conn:
+        # Enable pgvector extension (required for VECTOR columns)
+        if DATABASE_URL.startswith("postgresql"):
+            await conn.execute(sa_text("CREATE EXTENSION IF NOT EXISTS vector"))
         # Import ALL model modules so Base.metadata discovers every table
         from app.models import (  # noqa: F401
             farmer,

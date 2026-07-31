@@ -52,13 +52,7 @@ def upgrade() -> None:
             batch_op.drop_column("model_used")
         except Exception:
             pass
-        # Add new columns
-        batch_op.add_column(
-            sa.Column("is_healthy", sa.Boolean(), server_default=sa.text("false"), nullable=True)
-        )
-        batch_op.add_column(
-            sa.Column("description", sa.Text(), nullable=True)
-        )
+        # Add new columns (is_healthy + description already exist from 001)
         batch_op.add_column(
             sa.Column("treatment", sa.Text(), nullable=True)
         )
