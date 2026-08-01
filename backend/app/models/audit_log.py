@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import String, DateTime, ForeignKey, Index, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -25,14 +25,14 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     # ── Columns ────────────────────────────────────────────────────────
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
-    farmer_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True),
+    farmer_id: Mapped[Optional[str]] = mapped_column(
+        String(36),
         ForeignKey("farmers.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
@@ -44,8 +44,8 @@ class AuditLog(Base):
     entity_type: Mapped[str] = mapped_column(
         String(50), nullable=False, comment="Target entity type: farmer, crop, expense, etc."
     )
-    entity_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True), nullable=True, comment="ID of the affected entity"
+    entity_id: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True, comment="ID of the affected entity"
     )
     old_value: Mapped[Optional[dict]] = mapped_column(
         JSONB, nullable=True, comment="Entity state before the change"

@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import String, Boolean, DateTime, Index
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -22,10 +21,10 @@ class OTPCode(Base):
     __tablename__ = "otp_codes"
 
     # ── Columns ────────────────────────────────────────────────────────
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
     phone: Mapped[str] = mapped_column(

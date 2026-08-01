@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import String, Float, DateTime, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -26,14 +25,14 @@ class Land(Base):
     __tablename__ = "lands"
 
     # ── Columns ────────────────────────────────────────────────────────
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
-    farmer_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    farmer_id: Mapped[str] = mapped_column(
+        String(36),
         ForeignKey("farmers.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Index, Text, Boolean
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 
@@ -198,10 +198,10 @@ class KnowledgeDocument(Base):
 
     __tablename__ = "knowledge_documents"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
     title: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -241,14 +241,14 @@ class DocumentEmbedding(Base):
 
     __tablename__ = "document_embeddings"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
-    document_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    document_id: Mapped[str] = mapped_column(
+        String(36),
         ForeignKey("knowledge_documents.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

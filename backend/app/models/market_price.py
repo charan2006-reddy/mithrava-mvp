@@ -10,7 +10,6 @@ from datetime import datetime, date
 from typing import Optional
 
 from sqlalchemy import String, Float, Date, DateTime, Index
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -22,10 +21,10 @@ class MarketPrice(Base):
     __tablename__ = "market_prices"
 
     # ── Columns ────────────────────────────────────────────────────────
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=uuid.uuid4,
+        default=lambda: str(uuid.uuid4()),
         nullable=False,
     )
     crop_name: Mapped[str] = mapped_column(
