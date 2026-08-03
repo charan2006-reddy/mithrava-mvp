@@ -64,11 +64,14 @@ print('  Tables created via create_all()')
 fi
 
 # ---------------------------------------------------------------------------
-# Step 2: Auto-seed knowledge base
+# Step 2: Auto-seed knowledge base (opt-in — off by default; on low-memory
+# free tiers this step can exceed the memory limit, so it only runs when
+# SEED_KNOWLEDGE_BASE=true)
 # ---------------------------------------------------------------------------
-echo ""
-echo "[2/3] Seeding knowledge base..."
-python -c "
+if [[ "${SEED_KNOWLEDGE_BASE:-false}" == "true" ]]; then
+    echo ""
+    echo "[2/3] Seeding knowledge base..."
+    python -c "
 import asyncio, os
 os.environ.setdefault('DATABASE_URL', 'sqlite+aiosqlite:///:memory:')
 
@@ -87,6 +90,10 @@ async def seed():
 
 asyncio.run(seed())
 " 2>/dev/null || echo "  Seed skipped (not critical)"
+else
+    echo ""
+    echo "[2/3] Skipping knowledge base seeding (set SEED_KNOWLEDGE_BASE=true to enable)"
+fi
 
 # ---------------------------------------------------------------------------
 # Step 3: Start the application
