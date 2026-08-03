@@ -85,21 +85,24 @@ async def lifespan(app: FastAPI):
     # Startup
     await init_db()
 
-    # Auto-seed knowledge base on first run (idempotent — skips existing data)
-    try:
-        from app.database import async_session_factory
-        from app.services.rag_service import RAGService
+    # Auto-seed knowledge base on first run (opt-in — off by default; on
+    # low-memory free tiers this step can exceed the memory limit, so it only
+    # runs when SEED_KNOWLEDGE_BASE=true)
+    if os.getenv("SEED_KNOWLEDGE_BASE", "false").lower() == "true":
+        try:
+            from app.database import async_session_factory
+            from app.services.rag_service import RAGService
 
-        async with async_session_factory() as session:
-            result = await RAGService.seed_knowledge_base(session)
-            if result.get("articles", 0) > 0:
-                logger.info(
-                    "Knowledge base seeded: %d articles, %d chunks",
-                    result["articles"],
-                    result["chunks"],
-                )
-    except Exception as exc:
-        logger.info("Knowledge base seed skipped: %s", exc)
+            async with async_session_factory() as session:
+                result = await RAGService.seed_knowledge_base(session)
+                if result.get("articles", 0) > 0:
+                    logger.info(
+                        "Knowledge base seeded: %d articles, %d chunks",
+                        result["articles"],
+                        result["chunks"],
+                    )
+        except Exception as exc:
+            logger.info("Knowledge base seed skipped: %s", exc)
 
     local_ip = get_local_ip()
     logger.info("=" * 60)
